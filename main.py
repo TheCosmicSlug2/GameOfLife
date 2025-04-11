@@ -59,22 +59,28 @@ def get_starting_grid_cells(menu: MainMenu):
 
 def main():
     menu = MainMenu()
-    menu.show()
-    cells_state = get_starting_grid_cells(menu)
-
     input_handler = InputHandler()
-    renderer = Renderer(menu.screen_dims)
+    
 
-    running = True
-    while running:
-        
-        input_handler.get_mouse_event()
-        if input_handler.exit:
-            running = False
-        renderer.draw_cells(cells_state, menu.cellsize)
-        renderer.blit_cell_surface()
-        renderer.update(menu.delay)
-        cells_state = get_next_gen(cells_state)
+    global_running = True
+    while global_running:
+        menu.show()
+        renderer = Renderer(menu.screen_dims)
+        cells_state = get_starting_grid_cells(menu)
+
+        running = True
+        while running:
+            input_handler.get_mouse_event()
+            if input_handler.exit:
+                running = False
+                global_running = False
+            if input_handler.new:
+                running = False
+            renderer.draw_cells(cells_state, menu.cellsize)
+            renderer.blit_cell_surface()
+            renderer.update(menu.delay)
+            cells_state = get_next_gen(cells_state)
+        del renderer.SCREEN
 
 
 
@@ -120,5 +126,4 @@ def get_next_gen(input_list_cells):
 
 
 if __name__ == "__main__":
-    print(True)
     main()

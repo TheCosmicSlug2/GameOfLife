@@ -4,13 +4,10 @@ class InputHandler:
     def __init__(self):
         self.exit = False
         self.click_on = False
+        self.new = False
 
     def get_mouse_event(self):
-        dic_events = {
-            pg.QUIT: "exit",
-            pg.MOUSEBUTTONDOWN: "click_on",
-            pg.MOUSEBUTTONUP: "click_off"
-        }
+        self.new = False
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.exit = True
@@ -18,6 +15,10 @@ class InputHandler:
                 self.click_on = True
             if event.type == pg.MOUSEBUTTONUP:
                 self.click_on = False
+        
+        pressed = pg.key.get_pressed()
+        if pressed[pg.K_n]:
+            self.new = True
 
     @staticmethod
     def get_mouse_pos():
