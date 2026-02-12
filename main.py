@@ -4,6 +4,7 @@ from dic_models import models, unpack
 from draw import draw_grid
 from input_handler import InputHandler
 from renderer import Renderer
+import smartfust as sf
 
 def get_grid_dims(screen_dims, cellsize):
     nb_col = screen_dims[0] // cellsize[0]
@@ -48,25 +49,73 @@ def get_model_list(model_name, grid_dims):
 
 
 
-def get_starting_grid_cells(menu: MainMenu):
-    if menu.game_mode == "random":
-        return random_grid(menu.grid_dims)
-    if menu.game_mode == "model":
-        return get_model_list(menu.selected_model, menu.grid_dims)
-    if menu.game_mode == "draw":
-        return draw_grid(menu.cellsize, menu.grid_dims, menu.screen_dims)
+def get_starting_grid_cells(output: dict):
+    screen_dims = (output[7], output[7])
+    cell_dims = (output[5], output[5])
+    grid_dims = screen_dims[0] // cell_dims[0], screen_dims[1] // cell_dims[1]
+    if output[0]:
+        return random_grid(grid_dims)
+    if output[1]:
+        return draw_grid(cell_dims, grid_dims, screen_dims)
+    if output[3]:
+        return get_model_list(output[10], grid_dims)
 
+
+from dic_models import models
+MENU_WIDGETS = {
+    0: sf.Button((40, 20), (80, 40), "Random", "quit", borders=[1], text_height=15),
+    1: sf.Button((150, 20), (80, 40), "Draw", "quit", borders=[1], text_height=15),
+    2: sf.Label((260, 30), (20, 20), "or", text_height=15, textfg=sf.WHITE, colors=[sf.TRANSPARENT]),
+    3: sf.Button((260, 90), (70, 30), "Select", "quit", borders=[1], text_height=15),
+    4: sf.Label((40, 150), (70, 30), "Cell size", colors=[sf.TRANSPARENT], textfg=sf.WHITE, text_height=15),
+    5: sf.Slider((150, 150), (120, 30), range=(1, 10), bar_text_fg=sf.WHITE, text_height=15),
+    6: sf.Label((40, 210), (100, 30), "Width / Height", colors=[sf.TRANSPARENT], textfg=sf.WHITE, text_height=15),
+    7: sf.Slider((150, 210), (120, 30), range=(200, 600), bar_text_fg=sf.WHITE, text_height=15),
+    8: sf.Label((40, 270), (100, 30), "FPS", colors=[sf.TRANSPARENT], textfg=sf.WHITE, text_height=15),
+    9: sf.Slider((150, 270), (120, 30), range=(1, 100), bar_text_fg=sf.WHITE, text_height=15),
+    10: sf.List((40, 90), (200, 30), values=list(models.keys()), borders=[1]),
+}
+
+bg_array = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0],
+    [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
 
 def main():
-    menu = MainMenu()
+    menu = sf.Display(dims=(400, 400), title="Main menu")
+    menu.set_bg(type="custom", colors=[(40, 40, 40), (200, 200, 200)], array=bg_array)
+    menu.add_widgets(MENU_WIDGETS)
     input_handler = InputHandler()
     
 
     global_running = True
     while global_running:
-        menu.show()
-        renderer = Renderer(menu.screen_dims)
-        cells_state = get_starting_grid_cells(menu)
+        menu.mainloop()
+        output = menu.get_output()
+        if output == sf.GLOBAL_QUIT:
+            return
+        renderer = Renderer((output[7], output[7]))
+        cells_state = get_starting_grid_cells(output)
 
         running = True
         while running:
@@ -76,9 +125,9 @@ def main():
                 global_running = False
             if input_handler.new:
                 running = False
-            renderer.draw_cells(cells_state, menu.cellsize)
+            renderer.draw_cells(cells_state, (output[5], output[5]))
             renderer.blit_cell_surface()
-            renderer.update(menu.delay)
+            renderer.update(output[9])
             cells_state = get_next_gen(cells_state)
         del renderer.SCREEN
 
