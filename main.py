@@ -5,6 +5,7 @@ from draw import draw_grid
 from input_handler import InputHandler
 from renderer import Renderer
 import smartfust as sf
+import pygame as pg
 
 def get_grid_dims(screen_dims, cellsize):
     nb_col = screen_dims[0] // cellsize[0]
@@ -68,11 +69,11 @@ MENU_WIDGETS = {
     2: sf.Label((260, 30), (20, 20), "or", text_height=15, textfg=sf.WHITE, colors=[sf.TRANSPARENT]),
     3: sf.Button((260, 90), (70, 30), "Select", "quit", borders=[1], text_height=15),
     4: sf.Label((40, 150), (70, 30), "Cell size", colors=[sf.TRANSPARENT], textfg=sf.WHITE, text_height=15),
-    5: sf.Slider((150, 150), (120, 30), range=(1, 10), bar_text_fg=sf.WHITE, text_height=15),
+    5: sf.Slider((150, 150), (120, 30), _range=(1, 10), bar_text_fg=sf.WHITE, text_height=15),
     6: sf.Label((40, 210), (100, 30), "Width / Height", colors=[sf.TRANSPARENT], textfg=sf.WHITE, text_height=15),
-    7: sf.Slider((150, 210), (120, 30), range=(200, 600), bar_text_fg=sf.WHITE, text_height=15),
+    7: sf.Slider((150, 210), (120, 30), _range=(200, 600), bar_text_fg=sf.WHITE, text_height=15),
     8: sf.Label((40, 270), (100, 30), "FPS", colors=[sf.TRANSPARENT], textfg=sf.WHITE, text_height=15),
-    9: sf.Slider((150, 270), (120, 30), range=(1, 100), bar_text_fg=sf.WHITE, text_height=15),
+    9: sf.Slider((150, 270), (120, 30), _range=(1, 100), bar_text_fg=sf.WHITE, text_height=15),
     10: sf.List((40, 90), (200, 30), values=list(models.keys()), borders=[1]),
 }
 
@@ -102,35 +103,32 @@ bg_array = [
 ]
 
 def main():
-    menu = sf.Display(dims=(400, 400), title="Main menu")
-    menu.set_bg(type="custom", colors=[(40, 40, 40), (200, 200, 200)], array=bg_array)
-    menu.add_widgets(MENU_WIDGETS)
-    input_handler = InputHandler()
+    screen = pg.display.set_mode((400, 400))
+    sf_display = sf.Display(screen, title="Main menu")
+    sf_display.set_bg(_type="custom", colors=[(40, 40, 40), (200, 200, 200)], array=bg_array)
+    sf_display.add_widgets(MENU_WIDGETS)
+
+    sf_display.mainloop()
+    output = sf_display.widget_values()
     
+    if output == sf.GLOBAL_QUIT:
+        return
 
-    global_running = True
-    while global_running:
-        menu.mainloop()
-        output = menu.get_output()
-        if output == sf.GLOBAL_QUIT:
-            return
-        renderer = Renderer((output[7], output[7]))
-        cells_state = get_starting_grid_cells(output)
-
-        running = True
-        while running:
-            input_handler.get_mouse_event()
-            if input_handler.exit:
-                running = False
-                global_running = False
-            if input_handler.new:
-                running = False
-            renderer.draw_cells(cells_state, (output[5], output[5]))
-            renderer.blit_cell_surface()
-            renderer.update(output[9])
-            cells_state = get_next_gen(cells_state)
-        del renderer.SCREEN
-
+    
+    input_handler = InputHandler()
+    renderer = Renderer((output[7], output[7]))
+    cells_state = get_starting_grid_cells(output)
+    running = True
+    while running:
+        input_handler.get_mouse_event()
+        if input_handler.exit:
+            running = False
+        if input_handler.new:
+            main()
+        renderer.draw_cells(cells_state, (output[5], output[5]))
+        renderer.blit_cell_surface()
+        renderer.update(output[9])
+        cells_state = get_next_gen(cells_state)
 
 
 def get_next_gen(input_list_cells):

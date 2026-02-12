@@ -1,4 +1,5 @@
-from pygame import event, MOUSEBUTTONUP, KEYDOWN, mouse, K_LEFT, K_RIGHT, K_UP, K_DOWN, K_BACKSPACE, K_RETURN, key, QUIT
+from pygame import event, MOUSEBUTTONUP, KEYDOWN, mouse, K_LEFT, K_RIGHT, K_UP, K_DOWN,\
+    K_BACKSPACE, K_RETURN, key, QUIT, K_DELETE
 
 # Events
 EXIT = 1
@@ -14,16 +15,17 @@ MOUSE_POS = 10
 KEYS = 11
 BACKSPACE = 12
 ENTER = 13
+DELETE = 14
 
 class InputManager:
     def __init__(self):
         self.events = {}
         self.last_events = {}
-    
-    def get_events(self):
+
+    def get_events(self, pg_events):
         # Pygame events
         self.events[KEYS] = []
-        for e in event.get():
+        for e in pg_events:
             if e.type == QUIT:
                 self.events[EXIT] = True
             if e.type == MOUSEBUTTONUP:
@@ -33,8 +35,8 @@ class InputManager:
                     self.events[RIGHTCLICK_UP] = e.pos
             if e.type == KEYDOWN:
                 if e.unicode:
-                    self.events[KEYS] = e.unicode
-        
+                    self.events[KEYS].append(e.unicode)
+
         # Mouse pos and click
         mouse_pressed = mouse.get_pressed()
         if mouse_pressed[0]:
@@ -42,21 +44,22 @@ class InputManager:
         if mouse_pressed[2]:
             self.events[RIGHTCLICK_DOWN] = True
         self.events[MOUSE_POS] = mouse.get_pos()
-        
+
         desired_keys = {
             K_LEFT: LEFT,
             K_RIGHT: RIGHT,
             K_UP: UP,
             K_DOWN: DOWN,
             K_BACKSPACE: BACKSPACE,
-            K_RETURN: ENTER
+            K_RETURN: ENTER,
+            K_DELETE: DELETE
         }
 
         keys = key.get_pressed()
         for k, value in desired_keys.items():
             if keys[k]:
                 self.events[value] = True
-        
+
         return self.events
 
     def set_last_events(self):
